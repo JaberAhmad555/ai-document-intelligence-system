@@ -1,0 +1,101 @@
+# Environment files and secrets
+.env
+.env.*
+!.env.example
+!**/.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+credentials.json
+service-account*.json
+.aws/
+
+# Python environments and caches
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.pyre/
+.tox/
+.nox/
+
+# Python build output
+build/
+dist/
+*.egg
+
+# Coverage and generated test output
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+junit.xml
+test-results/
+playwright-report/
+
+# Local databases
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.sqlite3
+*.sqlite3-shm
+*.sqlite3-wal
+
+# Uploaded documents, extracted content, and temporary processing files
+/backend/data/
+/backend/uploads/
+/backend/storage/
+/backend/tmp/
+/backend/temp/
+/data/
+/uploads/
+/storage/
+/tmp/
+/temp/
+
+# Local machine-learning caches
+.cache/
+.huggingface/
+.hf-cache/
+.sentence-transformers/
+models-cache/
+
+# Logs and process files
+*.log
+logs/
+*.pid
+
+# Frontend dependencies and generated output
+node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/coverage/
+*.tsbuildinfo
+
+# Hosting tools
+.vercel/
+.railway/
+
+# Editor and operating-system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+*~
+
+# Archives of local working data
+backup/
+backups/

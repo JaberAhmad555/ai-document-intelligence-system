@@ -1,0 +1,6 @@
+# Install the existing application and testing dependencies.
+-r requirements.txt
+
+# Generate synthetic Excel 97-2003 workbooks for tests only.
+# The application does not import this package.
+xlwt==1.3.0

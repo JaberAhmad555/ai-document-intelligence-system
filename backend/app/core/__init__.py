@@ -1,0 +1,1 @@
+"""Shared configuration, database, HTTP, and error-handling infrastructure."""
