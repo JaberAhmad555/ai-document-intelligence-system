@@ -1,0 +1,17 @@
+.env
+.env.*
+.venv
+venv
+__pycache__
+.pytest_cache
+.coverage
+data
+uploads
+storage
+tmp
+temp
+tests
+*.db
+*.sqlite
+*.sqlite3
+.git
