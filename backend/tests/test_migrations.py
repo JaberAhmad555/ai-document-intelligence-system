@@ -11,6 +11,7 @@ from alembic import command
 from alembic.autogenerate import compare_metadata
 from alembic.config import Config
 from alembic.migration import MigrationContext
+from alembic.script import ScriptDirectory
 from fastapi.testclient import TestClient
 from sqlalchemy import inspect, text
 from sqlalchemy.engine import Connection, Engine
@@ -19,12 +20,16 @@ from sqlalchemy.exc import IntegrityError
 from app.core.config import BACKEND_DIR, Settings
 from app.core.database import Base, build_engine
 from app.main import create_app
-
-# Ensure model metadata is registered before schema comparison.
 from app.models import ingestion  # noqa: F401
 
 
-REVISION = "0001_initial_ingestion"
+APPLICATION_TABLES = {
+    "documents",
+    "processing_jobs",
+    "document_extractions",
+    "extracted_units",
+    "document_extraction_heads",
+}
 
 
 @pytest.fixture
@@ -57,7 +62,6 @@ def migrated_engine(
     alembic_config: Config,
     migration_settings: Settings,
 ) -> Iterator[Engine]:
-    # Schema creation happens only through Alembic in this test module.
     command.upgrade(alembic_config, "head")
     engine = build_engine(migration_settings)
 
@@ -65,6 +69,12 @@ def migrated_engine(
         yield engine
     finally:
         engine.dispose()
+
+
+def expected_head(config: Config) -> str:
+    head = ScriptDirectory.from_config(config).get_current_head()
+    assert head is not None
+    return head
 
 
 def insert_document(
@@ -75,31 +85,16 @@ def insert_document(
     document_id = uuid4()
     timestamp = datetime.now(timezone.utc).isoformat()
 
-    # Use raw SQL to exercise database defaults, rather than ORM defaults.
     connection.execute(
         text(
             """
             INSERT INTO documents (
-                id,
-                original_filename,
-                storage_key,
-                extension,
-                media_type,
-                size_bytes,
-                sha256,
-                created_at,
-                updated_at
+                id, original_filename, storage_key, extension,
+                media_type, size_bytes, sha256, created_at, updated_at
             )
             VALUES (
-                :id,
-                :original_filename,
-                :storage_key,
-                :extension,
-                :media_type,
-                :size_bytes,
-                :sha256,
-                :created_at,
-                :updated_at
+                :id, :original_filename, :storage_key, :extension,
+                :media_type, :size_bytes, :sha256, :created_at, :updated_at
             )
             """
         ),
@@ -118,10 +113,7 @@ def insert_document(
     return document_id
 
 
-def insert_job(
-    connection: Connection,
-    document_id: UUID,
-) -> UUID:
+def insert_job(connection: Connection, document_id: UUID) -> UUID:
     job_id = uuid4()
     timestamp = datetime.now(timezone.utc).isoformat()
 
@@ -129,20 +121,12 @@ def insert_job(
         text(
             """
             INSERT INTO processing_jobs (
-                id,
-                document_id,
-                max_attempts,
-                available_at,
-                created_at,
-                updated_at
+                id, document_id, max_attempts, available_at,
+                created_at, updated_at
             )
             VALUES (
-                :id,
-                :document_id,
-                :max_attempts,
-                :available_at,
-                :created_at,
-                :updated_at
+                :id, :document_id, :max_attempts, :available_at,
+                :created_at, :updated_at
             )
             """
         ),
@@ -158,7 +142,10 @@ def insert_job(
     return job_id
 
 
-def test_upgrade_matches_existing_model_metadata(migrated_engine):
+def test_upgrade_matches_existing_model_metadata(
+    migrated_engine,
+    alembic_config,
+):
     with migrated_engine.connect() as connection:
         migration_context = MigrationContext.configure(
             connection,
@@ -167,22 +154,19 @@ def test_upgrade_matches_existing_model_metadata(migrated_engine):
                 "compare_server_default": True,
             },
         )
-        differences = compare_metadata(migration_context, Base.metadata)
-
-        assert differences == []
+        assert compare_metadata(migration_context, Base.metadata) == []
         assert connection.scalar(
             text("SELECT version_num FROM alembic_version")
-        ) == REVISION
+        ) == expected_head(alembic_config)
 
 
 def test_named_constraints_and_indexes_exist(migrated_engine):
     inspector = inspect(migrated_engine)
 
-    document_checks = {
+    assert {
         item["name"]
         for item in inspector.get_check_constraints("documents")
-    }
-    assert document_checks == {
+    } == {
         "ck_documents_document_status",
         "ck_documents_positive_size",
         "ck_documents_valid_progress",
@@ -191,11 +175,10 @@ def test_named_constraints_and_indexes_exist(migrated_engine):
         "ck_documents_processed_units_within_total",
     }
 
-    job_checks = {
+    assert {
         item["name"]
         for item in inspector.get_check_constraints("processing_jobs")
-    }
-    assert job_checks == {
+    } == {
         "ck_processing_jobs_processing_job_kind",
         "ck_processing_jobs_processing_job_status",
         "ck_processing_jobs_nonnegative_attempt_count",
@@ -204,11 +187,10 @@ def test_named_constraints_and_indexes_exist(migrated_engine):
         "ck_processing_jobs_running_job_has_lease",
     }
 
-    document_indexes = {
+    assert {
         item["name"]
         for item in inspector.get_indexes("documents")
-    }
-    assert document_indexes == {
+    } == {
         "ix_documents_sha256",
         "ix_documents_created_at_id",
         "ix_documents_status_created_at",
@@ -231,11 +213,10 @@ def test_named_constraints_and_indexes_exist(migrated_engine):
     assert "queued" in predicate
     assert "running" in predicate
 
-    unique_constraints = {
+    assert "uq_documents_storage_key" in {
         item["name"]
         for item in inspector.get_unique_constraints("documents")
     }
-    assert "uq_documents_storage_key" in unique_constraints
 
     foreign_keys = inspector.get_foreign_keys("processing_jobs")
     assert len(foreign_keys) == 1
@@ -287,7 +268,6 @@ def test_document_constraints_reject_invalid_values(migrated_engine, updates):
     with migrated_engine.begin() as connection:
         document_id = insert_document(connection)
 
-    # Column names below come exclusively from the fixed test cases.
     assignments = ", ".join(f"{column} = :{column}" for column in updates)
 
     with pytest.raises(IntegrityError):
@@ -338,10 +318,7 @@ def test_only_one_active_job_per_document(migrated_engine):
 
     with migrated_engine.begin() as connection:
         connection.execute(
-            text(
-                "UPDATE processing_jobs SET status = 'failed' "
-                "WHERE id = :id"
-            ),
+            text("UPDATE processing_jobs SET status = 'failed' WHERE id = :id"),
             {"id": first_job_id.hex},
         )
         insert_job(connection, document_id)
@@ -387,43 +364,30 @@ def test_document_deletion_cascades_to_jobs(migrated_engine):
         ) == 0
 
 
-def test_upgrade_downgrade_upgrade(
-    alembic_config,
-    migration_settings,
-):
+def test_upgrade_downgrade_upgrade(alembic_config, migration_settings):
     command.upgrade(alembic_config, "head")
     engine = build_engine(migration_settings)
 
     try:
-        assert {"documents", "processing_jobs"}.issubset(
-            inspect(engine).get_table_names()
-        )
+        assert APPLICATION_TABLES.issubset(inspect(engine).get_table_names())
 
         command.downgrade(alembic_config, "base")
 
-        remaining_tables = inspect(engine).get_table_names()
-        assert "documents" not in remaining_tables
-        assert "processing_jobs" not in remaining_tables
+        assert APPLICATION_TABLES.isdisjoint(inspect(engine).get_table_names())
 
         command.upgrade(alembic_config, "head")
 
-        assert {"documents", "processing_jobs"}.issubset(
-            inspect(engine).get_table_names()
-        )
+        assert APPLICATION_TABLES.issubset(inspect(engine).get_table_names())
 
         with engine.connect() as connection:
             assert connection.scalar(
                 text("SELECT version_num FROM alembic_version")
-            ) == REVISION
+            ) == expected_head(alembic_config)
     finally:
         engine.dispose()
 
 
-def test_postgresql_offline_sql_generation(
-    alembic_config,
-    tmp_path,
-):
-    # This is SQL compilation coverage, not a live PostgreSQL test.
+def test_postgresql_offline_sql_generation(alembic_config, tmp_path):
     alembic_config.attributes["settings"] = Settings(
         _env_file=None,
         app_env="test",
@@ -443,6 +407,9 @@ def test_postgresql_offline_sql_generation(
 
     assert "CREATE TABLE documents" in generated_sql
     assert "CREATE TABLE processing_jobs" in generated_sql
+    assert "CREATE TABLE document_extractions" in generated_sql
+    assert "CREATE TABLE extracted_units" in generated_sql
+    assert "CREATE TABLE document_extraction_heads" in generated_sql
     assert "UUID" in generated_sql
     assert "TIMESTAMP WITH TIME ZONE" in generated_sql
     assert "uq_processing_jobs_active_document" in generated_sql
