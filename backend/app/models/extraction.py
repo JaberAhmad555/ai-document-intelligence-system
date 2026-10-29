@@ -59,6 +59,7 @@ class DocumentExtraction(Base):
             "(unit_count > 0 AND part_count IS NOT NULL AND part_count > 0)",
             name="ready_has_units",
         ),
+        Index("ix_document_extractions_invoice_identity", "invoice_identity"),
         Index(
             "ix_document_extractions_document_id",
             "document_id",
@@ -100,6 +101,22 @@ class DocumentExtraction(Base):
     ready_at: Mapped[datetime | None] = mapped_column(
         UTCDateTime(),
         nullable=True,
+    )
+
+
+    # Immutable invoice snapshot for this lease-token extraction attempt.
+    # Publication additionally requires the existing job/document success gates.
+    invoice_result: Mapped[dict | None] = mapped_column(
+        JSON(none_as_null=True), nullable=True
+    )
+    invoice_identity: Mapped[str | None] = mapped_column(
+        String(64), nullable=True
+    )
+    invoice_digest: Mapped[str | None] = mapped_column(
+        String(64), nullable=True
+    )
+    invoice_created_at: Mapped[datetime | None] = mapped_column(
+        UTCDateTime(), nullable=True
     )
 
 

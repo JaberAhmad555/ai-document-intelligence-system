@@ -195,6 +195,11 @@ class GeminiInvoiceProvider:
             )
 
     def extract(self, contents: str) -> Invoice:
+
+        schema = Invoice.model_json_schema(mode="validation")
+
+        for field in ("line_items", "uncertain_fields", "evidence"):
+            schema["properties"][field].pop("maxItems", None)
         try:
             from google import genai
             from google.genai import errors, types
@@ -220,12 +225,10 @@ class GeminiInvoiceProvider:
                     contents=contents,
                     config=types.GenerateContentConfig(
                         system_instruction=SYSTEM_INSTRUCTION,
-                        temperature=0,
+                        
                         max_output_tokens=self.settings.max_output_tokens,
                         response_mime_type="application/json",
-                        response_json_schema=Invoice.model_json_schema(
-                            mode="validation"
-                        ),
+                        response_json_schema=schema,
                     ),
                 )
         except errors.APIError as exc:
