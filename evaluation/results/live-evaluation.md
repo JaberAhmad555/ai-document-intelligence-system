@@ -2,7 +2,7 @@
 
 > Auto-generated from **actual authenticated API responses**. This is a small, synthetic set, not a production accuracy claim.
 
-- Evaluated at (UTC): `2026-10-30T14:38:59.627156+00:00`
+- Evaluated at (UTC): `2026-10-30T16:13:43.550447+00:00`
 - Backend: `https://ai-document-intelligence-api-cjh6.onrender.com`
 - Dataset: `Care Guide synthetic invoices v1`
 
@@ -17,38 +17,27 @@
 | Client errors | 0 |
 | Completion rate (accepted) | 100.0% |
 | Terminal failure rate (accepted) | 0.0% |
-| Completed-only field accuracy | 80.0% (48/60) |
-| All-accepted field accuracy | 80.0% (48/60) |
-| Mean end-to-end completion time | 12.4133 s |
-| Median end-to-end completion time | 12.373 s |
-| p95 completion time | 16.6859 s |
-| Documents requiring review | 1 |
-| Total validation issues | 35 |
+| Completed-only field accuracy | 100.0% (60/60) |
+| All-accepted field accuracy | 100.0% (60/60) |
+| Mean end-to-end completion time | 9.1209 s |
+| Median end-to-end completion time | 12.3845 s |
+| p95 completion time | 12.4556 s |
+| Documents requiring review | 0 |
+| Total validation issues | 0 |
 
 ## By-file outcomes
 
 | Synthetic file | Format | Status | Field matches | Processing seconds | Warnings |
 |---|---|---|---:|---:|---:|
-| `eval_csv_invoice.csv` | csv | completed | 12/12 | 16.6859 | 0 |
-| `eval_digital_invoice.pdf` | digital_pdf | completed | 12/12 | 8.2582 | 0 |
-| `eval_scanned_invoice.pdf` | scanned_pdf | completed | 12/12 | 12.373 | 0 |
-| `eval_image_invoice.png` | image | completed | 12/12 | 12.3814 | 0 |
-| `eval_spreadsheet_invoice.xlsx` | xlsx | completed | 0/12 | 12.3678 | 35 |
+| `eval_csv_invoice.csv` | csv | completed | 12/12 | 12.3845 | 0 |
+| `eval_digital_invoice.pdf` | digital_pdf | completed | 12/12 | 4.1496 | 0 |
+| `eval_scanned_invoice.pdf` | scanned_pdf | completed | 12/12 | 12.4304 | 0 |
+| `eval_image_invoice.png` | image | completed | 12/12 | 12.4556 | 0 |
+| `eval_spreadsheet_invoice.xlsx` | xlsx | completed | 12/12 | 4.1845 | 0 |
 
 ## Per-field discrepancies
 
-- `eval_spreadsheet_invoice.xlsx` / `invoice_number`: expected `EVAL-XLS-605`, returned `None`.
-- `eval_spreadsheet_invoice.xlsx` / `invoice_date`: expected `2026-10-25`, returned `None`.
-- `eval_spreadsheet_invoice.xlsx` / `supplier_name`: expected `North Wind Supplies`, returned `None`.
-- `eval_spreadsheet_invoice.xlsx` / `customer_name`: expected `Blue Moon Services`, returned `None`.
-- `eval_spreadsheet_invoice.xlsx` / `currency`: expected `BDT`, returned `None`.
-- `eval_spreadsheet_invoice.xlsx` / `subtotal`: expected `1000.00`, returned `None`.
-- `eval_spreadsheet_invoice.xlsx` / `tax`: expected `50.00`, returned `None`.
-- `eval_spreadsheet_invoice.xlsx` / `total`: expected `1050.00`, returned `None`.
-- `eval_spreadsheet_invoice.xlsx` / `line_items.0.description`: expected `Stapler Box`, returned `None`.
-- `eval_spreadsheet_invoice.xlsx` / `line_items.0.quantity`: expected `5`, returned `None`.
-- `eval_spreadsheet_invoice.xlsx` / `line_items.0.unit_price`: expected `200.00`, returned `None`.
-- `eval_spreadsheet_invoice.xlsx` / `line_items.0.line_total`: expected `1000.00`, returned `None`.
+No field discrepancies observed among the completed samples. This does not imply zero generalization error.
 
 ## Method and limitations
 

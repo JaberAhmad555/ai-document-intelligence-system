@@ -1,5 +1,5 @@
 {
-  "evaluated_at_utc": "2026-10-30T14:38:59.627156+00:00",
+  "evaluated_at_utc": "2026-10-30T16:13:43.550447+00:00",
   "base_url": "https://ai-document-intelligence-api-cjh6.onrender.com",
   "dataset": "Care Guide synthetic invoices v1",
   "requested_cases": 5,
@@ -11,26 +11,26 @@
   "completion_rate_pct": 100.0,
   "terminal_failure_rate_pct": 0.0,
   "timeout_rate_pct": 0.0,
-  "completed_only_field_accuracy_pct": 80.0,
-  "all_accepted_field_accuracy_pct": 80.0,
-  "correct_fields": 48,
+  "completed_only_field_accuracy_pct": 100.0,
+  "all_accepted_field_accuracy_pct": 100.0,
+  "correct_fields": 60,
   "scored_fields_completed": 60,
   "known_fields_accepted": 60,
-  "mean_completion_seconds": 12.4133,
-  "median_completion_seconds": 12.373,
-  "p95_completion_seconds": 16.6859,
-  "review_required_completed_count": 1,
-  "total_issues_completed": 35,
+  "mean_completion_seconds": 9.1209,
+  "median_completion_seconds": 12.3845,
+  "p95_completion_seconds": 12.4556,
+  "review_required_completed_count": 0,
+  "total_issues_completed": 0,
   "cases": [
     {
       "fixture": "eval_csv_invoice.csv",
       "format": "csv",
       "state": "completed",
       "accepted": true,
-      "duration_seconds": 16.6859,
+      "duration_seconds": 12.3845,
       "matches": 12,
       "scored_fields": 12,
-      "document_id": "e082a761-e60a-4203-8117-158cc3c110b8",
+      "document_id": "2571e383-78e6-4499-9845-116aed2688f0",
       "field_results": {
         "invoice_number": {
           "match": true,
@@ -105,10 +105,10 @@
       "format": "digital_pdf",
       "state": "completed",
       "accepted": true,
-      "duration_seconds": 8.2582,
+      "duration_seconds": 4.1496,
       "matches": 12,
       "scored_fields": 12,
-      "document_id": "de8dbcb2-816a-49e4-a291-3123042819a8",
+      "document_id": "aac1d9da-0b43-4f1f-b2b2-7ec38316d7e3",
       "field_results": {
         "invoice_number": {
           "match": true,
@@ -183,10 +183,10 @@
       "format": "scanned_pdf",
       "state": "completed",
       "accepted": true,
-      "duration_seconds": 12.373,
+      "duration_seconds": 12.4304,
       "matches": 12,
       "scored_fields": 12,
-      "document_id": "91ef8524-7957-4eeb-8055-0baf77cefa62",
+      "document_id": "66c199e1-0417-48af-87de-ff06c1f05905",
       "field_results": {
         "invoice_number": {
           "match": true,
@@ -261,10 +261,10 @@
       "format": "image",
       "state": "completed",
       "accepted": true,
-      "duration_seconds": 12.3814,
+      "duration_seconds": 12.4556,
       "matches": 12,
       "scored_fields": 12,
-      "document_id": "0ad138d9-1a34-4586-bd79-3972a83d6b04",
+      "document_id": "dbc986ce-8521-4782-8aeb-ebb7a1859a05",
       "field_results": {
         "invoice_number": {
           "match": true,
@@ -339,78 +339,78 @@
       "format": "xlsx",
       "state": "completed",
       "accepted": true,
-      "duration_seconds": 12.3678,
-      "matches": 0,
+      "duration_seconds": 4.1845,
+      "matches": 12,
       "scored_fields": 12,
-      "document_id": "ad099add-46d8-49f0-acc2-f74ad3f51132",
+      "document_id": "894f2991-3087-4431-96f9-3328b5ad9b80",
       "field_results": {
         "invoice_number": {
-          "match": false,
+          "match": true,
           "expected": "EVAL-XLS-605",
-          "actual": null
+          "actual": "EVAL-XLS-605"
         },
         "invoice_date": {
-          "match": false,
+          "match": true,
           "expected": "2026-10-25",
-          "actual": null
+          "actual": "2026-10-25"
         },
         "supplier_name": {
-          "match": false,
+          "match": true,
           "expected": "North Wind Supplies",
-          "actual": null
+          "actual": "North Wind Supplies"
         },
         "customer_name": {
-          "match": false,
+          "match": true,
           "expected": "Blue Moon Services",
-          "actual": null
+          "actual": "Blue Moon Services"
         },
         "currency": {
-          "match": false,
+          "match": true,
           "expected": "BDT",
-          "actual": null
+          "actual": "BDT"
         },
         "subtotal": {
-          "match": false,
+          "match": true,
           "expected": "1000.00",
-          "actual": null
+          "actual": "1000"
         },
         "tax": {
-          "match": false,
+          "match": true,
           "expected": "50.00",
-          "actual": null
+          "actual": "50"
         },
         "total": {
-          "match": false,
+          "match": true,
           "expected": "1050.00",
-          "actual": null
+          "actual": "1050"
         },
         "line_items.0.description": {
-          "match": false,
+          "match": true,
           "expected": "Stapler Box",
-          "actual": null
+          "actual": "Stapler Box"
         },
         "line_items.0.quantity": {
-          "match": false,
+          "match": true,
           "expected": "5",
-          "actual": null
+          "actual": "5"
         },
         "line_items.0.unit_price": {
-          "match": false,
+          "match": true,
           "expected": "200.00",
-          "actual": null
+          "actual": "200"
         },
         "line_items.0.line_total": {
-          "match": false,
+          "match": true,
           "expected": "1000.00",
-          "actual": null
+          "actual": "1000"
         }
       },
       "provider": "gemini",
       "model": "gemini-3.5-flash-lite",
-      "review_required": true,
-      "issue_count": 35,
+      "review_required": false,
+      "issue_count": 0,
       "errors": 0,
-      "warnings": 35
+      "warnings": 0
     }
   ]
 }
