@@ -14,7 +14,7 @@ from contextlib import closing
 from uuid import UUID
 
 from pydantic import ValidationError
-from sqlalchemy import and_, select
+from sqlalchemy import and_, case, select
 from sqlalchemy.orm import Session, aliased
 
 from app.core.database import utc_now
@@ -138,6 +138,22 @@ def decode_invoice(extraction: DocumentExtraction) -> InvoiceResult:
     return result
 
 
+def effective_invoice_payload():
+    """Select the review projection only when a correction revision exists."""
+    return case(
+        (DocumentExtraction.correction_revision > 0, DocumentExtraction.corrected_result),
+        else_=DocumentExtraction.invoice_result,
+    )
+
+
+def effective_invoice_identity():
+    # A human clearing an identity field must not fall back to the original.
+    return case(
+        (DocumentExtraction.correction_revision > 0, DocumentExtraction.corrected_identity),
+        else_=DocumentExtraction.invoice_identity,
+    )
+
+
 def refresh_duplicate_issues(
     session: Session,
     result: InvoiceResult,
@@ -155,7 +171,7 @@ def refresh_duplicate_issues(
     truncated = False
 
     if identity is not None:
-        payload = DocumentExtraction.invoice_result
+        payload = effective_invoice_payload()
         statement = (
             published_extractions()
             .with_only_columns(
@@ -166,7 +182,7 @@ def refresh_duplicate_issues(
                 maintain_column_froms=True,
             )
             .where(
-                DocumentExtraction.invoice_identity == identity,
+                effective_invoice_identity() == identity,
                 DocumentExtraction.document_id != current.source.document_id,
                 DocumentExtraction.invoice_result.is_not(None),
                 DocumentExtraction.invoice_digest.is_not(None),

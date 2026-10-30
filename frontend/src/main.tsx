@@ -1,7 +1,8 @@
 import { StrictMode, Component, type ErrorInfo, type ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { App } from './App';
-import { createApi, readLimits } from './api';
+import { DemoAccess } from './DemoAccess';
+import { checkSecureApiLocation } from './demoSession';
+import { readLimits } from './api';
 import './styles.css';
 
 class Boundary extends Component<{ children: ReactNode }, { failed: boolean }> {
@@ -14,9 +15,10 @@ class Boundary extends Component<{ children: ReactNode }, { failed: boolean }> {
 }
 const root = createRoot(document.getElementById('root')!);
 try {
-  const api = createApi(import.meta.env.VITE_API_BASE_URL);
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
+  checkSecureApiLocation(baseUrl);
   const limits = readLimits(import.meta.env);
-  root.render(<StrictMode><Boundary><App api={api} limits={limits} /></Boundary></StrictMode>);
+  root.render(<StrictMode><Boundary><DemoAccess baseUrl={baseUrl} limits={limits} /></Boundary></StrictMode>);
 } catch (error) {
   root.render(<main className="setup-screen"><p className="eyebrow">Document Intelligence</p><h1>Configuration required</h1><p>{error instanceof Error ? error.message : 'Check frontend environment settings.'}</p></main>);
 }

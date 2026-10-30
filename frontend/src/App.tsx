@@ -5,7 +5,7 @@ import { documentHref, parseRoute, useLocationHash, useRemote } from './hooks';
 import { EmptyState, ErrorPanel, Loading, Pagination, Progress, Status, UploadPanel, formatBytes, formatDate, statusLabels } from './components';
 import { DocumentDetail } from './DocumentDetail';
 
-export function App({ api, limits }: { api: Api; limits: UploadLimits }) {
+export function App({ api, limits, onSignOut }: { api: Api; limits: UploadLimits; onSignOut?: () => void }) {
   const hash = useLocationHash();
   const route = parseRoute(hash);
   const main = useRef<HTMLElement>(null);
@@ -38,7 +38,7 @@ export function App({ api, limits }: { api: Api; limits: UploadLimits }) {
       <div className="sidebar-note"><span className="small-rule" /><strong>Evidence comes first.</strong><p>Inspect source references and resolve exceptions before relying on extracted values.</p></div>
       <div className="sidebar-footer">Financial document operations</div>
     </aside>
-    <div className="workspace"><header className="topbar"><span>Operations console</span><span className="topbar-label">DOCUMENT REVIEW</span></header>
+    <div className="workspace"><header className="topbar"><span>Operations console</span>{onSignOut ? <button className="button button-small access-lock" onClick={onSignOut}>Lock workspace</button> : <span className="topbar-label">DOCUMENT REVIEW</span>}</header>
       <main id="main-content" tabIndex={-1} ref={main}>
         {notice && <div className="notice notice-success" role="status"><span>{notice}</span><button className="icon-button" aria-label="Dismiss upload notification" onClick={() => setNotice('')}>×</button></div>}
         {route.kind === 'document' ? <DocumentDetail key={route.id} id={route.id} api={api} /> : route.kind === 'missing' ? <EmptyState title="Page not found"><a className="button" href="#/">Return to documents</a></EmptyState> : <>

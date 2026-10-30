@@ -24,11 +24,13 @@ from app.services.uploads import upload_documents
 from app.schemas.invoice import Invoice, ValidationIssue, VerifiedEvidence
 from app.services.invoice_pipeline import (
     decode_invoice,
+    effective_invoice_payload,
     published_extractions,
     refresh_duplicate_issues,
 )
 from app.services.reading_types import CellValue, SourcePosition
 from app.workers.jobs import ProcessingError
+from app.services.review import current_review, failed_job_for
 
 
 router = APIRouter(
@@ -146,7 +148,7 @@ def _search_condition(query: str):
         .correlate(DocumentExtraction)
         .exists()
     )
-    payload = DocumentExtraction.invoice_result
+    payload = effective_invoice_payload()
     published_match = (
         published_extractions()
         .with_only_columns(DocumentExtraction.id, maintain_column_froms=True)
@@ -247,7 +249,10 @@ def get_document(
             message="The requested document does not exist.",
         )
 
-    return DocumentResponse.model_validate(document)
+    response = DocumentResponse.model_validate(document)
+    failed = failed_job_for(database, document)
+    response.failed_job_id = failed.id if failed is not None else None
+    return response
 
 class PublicSource(BaseModel):
     """Source provenance deliberately excludes internal storage keys."""
@@ -278,11 +283,15 @@ class InvoiceResponse(BaseModel):
     extraction_id: UUID
     created_at: datetime
     result: PublicInvoiceResult
+    correction_revision: int = 0
+    corrected_fields: list[str] = []
+    original_result: PublicInvoiceResult | None = None
     duplicates_checked_at: datetime
     duplicates_truncated: bool
 
 
 class ValidationResponse(BaseModel):
+    correction_revision: int = 0
     document_id: UUID
     extraction_id: UUID
     issues: list[ValidationIssue]
@@ -382,7 +391,13 @@ def _invoice_response(
             message="The stored invoice result failed validation.",
         ) from None
 
-    current, truncated = refresh_duplicate_issues(database, stored)
+    effective, audit = current_review(database, extraction)
+    current, truncated = refresh_duplicate_issues(database, effective)
+    if audit is not None:
+        current.review_required = True
+        current.confidence = "review_required"
+    original_values = stored.model_dump(mode="json")
+    original_values["source"] = PublicSource.model_validate(original_values["source"]).model_dump()
     values = current.model_dump(mode="json")
     values["source"] = PublicSource.model_validate(values["source"]).model_dump()
     return InvoiceResponse(
@@ -390,6 +405,9 @@ def _invoice_response(
         extraction_id=extraction.id,
         created_at=extraction.invoice_created_at,
         result=PublicInvoiceResult.model_validate(values),
+        correction_revision=extraction.correction_revision,
+        corrected_fields=audit.corrected_fields if audit else [],
+        original_result=PublicInvoiceResult.model_validate(original_values) if audit else None,
         duplicates_checked_at=utc_now(),
         duplicates_truncated=truncated,
     )
@@ -419,9 +437,16 @@ def get_validation(
     document_id: UUID,
     database: DatabaseDependency,
     extraction_id: UUID | None = None,
+    correction_revision: Annotated[int | None, Query(ge=0)] = None,
 ) -> ValidationResponse:
     response = _invoice_response(database, document_id, extraction_id)
+    if correction_revision is not None and correction_revision != response.correction_revision:
+        raise ApplicationError(
+            status_code=409, code="correction_changed",
+            message="The invoice was corrected. Refresh the document before comparing validation.",
+        )
     return ValidationResponse(
+        correction_revision=response.correction_revision,
         document_id=document_id,
         extraction_id=response.extraction_id,
         issues=response.result.issues,

@@ -80,7 +80,7 @@ it('displays invoice values, review issues, and duplicate links from the APIs', 
   expect(screen.getByRole('link', { name: /Open related document/ })).toHaveAttribute('href', '#/documents/' + OTHER_ID);
   expect(screen.getByText(/Test-provider result/)).toBeInTheDocument();
   expect(screen.getAllByText('Not provided').length).toBeGreaterThan(0);
-  expect(api.validation).toHaveBeenCalledWith(ID, EXTRACTION, expect.any(AbortSignal));
+  expect(api.validation).toHaveBeenCalledWith(ID, EXTRACTION, expect.any(AbortSignal), 0);
 });
 
 it('opens cited source content with the exact extraction ID and sequence cursor', async () => {
@@ -105,7 +105,7 @@ it('handles an extraction change without combining content versions', async () =
   expect(screen.queryByLabelText('Extracted text for unit 3')).not.toBeInTheDocument();
 });
 
-it('shows failed job information without inventing a reprocess endpoint', async () => {
+it('offers replacement upload when no retryable failed-job token is returned', async () => {
   window.history.replaceState(null, '', '/#/documents/' + ID);
   const api = fakeApi();
   api.document.mockResolvedValue(documentFixture({ status: 'failed', error_code: 'gemini_credentials_missing', error_message: 'Gemini credentials are missing.' }));

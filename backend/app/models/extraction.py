@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from sqlalchemy import (
     JSON,
@@ -60,6 +60,7 @@ class DocumentExtraction(Base):
             name="ready_has_units",
         ),
         Index("ix_document_extractions_invoice_identity", "invoice_identity"),
+        Index("ix_document_extractions_corrected_identity", "corrected_identity"),
         Index(
             "ix_document_extractions_document_id",
             "document_id",
@@ -118,6 +119,16 @@ class DocumentExtraction(Base):
     invoice_created_at: Mapped[datetime | None] = mapped_column(
         UTCDateTime(), nullable=True
     )
+
+
+    # Mutable review projection. Original invoice_* columns remain immutable.
+    correction_revision: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0, server_default="0"
+    )
+    corrected_result: Mapped[dict | None] = mapped_column(
+        JSON(none_as_null=True), nullable=True
+    )
+    corrected_identity: Mapped[str | None] = mapped_column(String(64), nullable=True)
 
 
 class ExtractedUnit(Base):
@@ -185,3 +196,62 @@ class DocumentExtractionHead(Base):
         Uuid(as_uuid=True),
         nullable=False,
     )
+
+
+class InvoiceCorrection(Base):
+    """Append-only review snapshots; no service updates or deletes these rows."""
+
+    __tablename__ = "invoice_corrections"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["extraction_id", "document_id"],
+            ["document_extractions.id", "document_extractions.document_id"],
+            name="fk_invoice_corrections_attempt_document",
+            ondelete="CASCADE",
+        ),
+        UniqueConstraint("extraction_id", "revision", name="uq_invoice_corrections_revision"),
+        UniqueConstraint("document_id", "request_id", name="uq_invoice_corrections_request"),
+        CheckConstraint("revision >= 1", name="positive_revision"),
+        Index("ix_invoice_corrections_document_id", "document_id"),
+    )
+
+    id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid4)
+    document_id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), nullable=False)
+    extraction_id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), nullable=False)
+    revision: Mapped[int] = mapped_column(Integer, nullable=False)
+    request_id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), nullable=False)
+    request_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    original_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    reviewer_label: Mapped[str] = mapped_column(String(100), nullable=False)
+    reason: Mapped[str] = mapped_column(String(1000), nullable=False)
+    changed_fields: Mapped[list] = mapped_column(JSON, nullable=False)
+    corrected_fields: Mapped[list] = mapped_column(JSON, nullable=False)
+    before_values: Mapped[dict] = mapped_column(JSON, nullable=False)
+    after_values: Mapped[dict] = mapped_column(JSON, nullable=False)
+    result: Mapped[dict] = mapped_column(JSON, nullable=False)
+    result_digest: Mapped[str] = mapped_column(String(64), nullable=False)
+    tolerance: Mapped[str] = mapped_column(String(32), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime(), nullable=False, default=utc_now)
+
+
+class ReprocessingRequest(Base):
+    """A retry receipt binds an idempotency key to one failed and one new job."""
+
+    __tablename__ = "reprocessing_requests"
+    __table_args__ = (
+        UniqueConstraint("new_job_id", name="uq_reprocessing_requests_new_job_id"),
+        UniqueConstraint("failed_job_id", name="uq_reprocessing_requests_failed_job_id"),
+        Index("ix_reprocessing_requests_document_id", "document_id"),
+    )
+
+    request_id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True)
+    document_id: Mapped[UUID] = mapped_column(
+        Uuid(as_uuid=True), ForeignKey("documents.id", ondelete="CASCADE"), nullable=False
+    )
+    failed_job_id: Mapped[UUID] = mapped_column(
+        Uuid(as_uuid=True), ForeignKey("processing_jobs.id", ondelete="CASCADE"), nullable=False
+    )
+    new_job_id: Mapped[UUID] = mapped_column(
+        Uuid(as_uuid=True), ForeignKey("processing_jobs.id", ondelete="CASCADE"), nullable=False
+    )
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime(), nullable=False, default=utc_now)

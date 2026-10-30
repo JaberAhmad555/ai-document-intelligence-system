@@ -99,3 +99,7 @@ Desktop.ini
 # Archives of local working data
 backup/
 backups/
+
+# Temporary assessment handoff and delivery archives
+astra-*.zip
+careguide-*.zip

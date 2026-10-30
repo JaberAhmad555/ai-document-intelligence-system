@@ -45,6 +45,8 @@ class DocumentResponse(BaseModel):
     total_units: int | None
     processed_units: int = Field(ge=0)
 
+    failed_job_id: UUID | None = None
+
     error_code: str | None
     error_message: str | None
 

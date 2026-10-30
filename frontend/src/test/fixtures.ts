@@ -48,6 +48,10 @@ export function fakeApi() {
     upload: vi.fn<Api['upload']>().mockResolvedValue({ count: 1, documents: [documentFixture({ status: 'queued', processing_stage: 'queued', progress_percent: 0, total_units: null, processed_units: 0, processing_started_at: null, processing_finished_at: null })] }),
     invoice: vi.fn<Api['invoice']>().mockImplementation(async id => invoiceFixture(id)),
     validation: vi.fn<Api['validation']>().mockImplementation(async id => validationFixture(id)),
+    correctInvoice: vi.fn<Api['correctInvoice']>().mockImplementation(async (id, command) => ({ id: OTHER_ID, request_id: command.request_id, document_id: id, extraction_id: command.extraction_id, revision: command.expected_revision + 1, created_at: '2026-10-30T09:00:00Z' })),
+    corrections: vi.fn<Api['corrections']>().mockImplementation(async (id, extractionId, offset) => ({ document_id: id, extraction_id: extractionId, items: [], total: 0, offset, limit: 5, has_more: false })),
+    correction: vi.fn<Api['correction']>(),
+    reprocess: vi.fn<Api['reprocess']>().mockImplementation(async (id, command) => ({ request_id: command.request_id, document_id: id, failed_job_id: command.failed_job_id, new_job_id: OTHER_ID, created_at: '2026-10-30T09:00:00Z' })),
     content: vi.fn<Api['content']>().mockImplementation(async (id, query) => contentFixture(query.after_sequence, id)),
   };
 }

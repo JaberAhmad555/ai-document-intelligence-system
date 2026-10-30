@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Literal
 from urllib.parse import urlsplit
 
-from pydantic import Field, field_validator, model_validator
+from pydantic import Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -28,6 +28,7 @@ class Settings(BaseSettings):
         case_sensitive=False,
         extra="ignore",
         validate_default=True,
+        hide_input_in_errors=True,
     )
 
     app_name: str = Field(
@@ -36,6 +37,12 @@ class Settings(BaseSettings):
         max_length=100,
     )
     app_env: Literal["development", "test", "production"] = "development"
+    # Never serialize or display the credential in settings output.
+    document_api_token: SecretStr | None = Field(default=None, repr=False, exclude=True)
+    document_auth_disabled: bool = False
+    # Render sets RENDER=true. Hosted services cannot use a development/test bypass.
+    render: bool = Field(default=False, repr=False, exclude=True)
+
     debug: bool = False
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
 

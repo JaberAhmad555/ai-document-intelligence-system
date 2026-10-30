@@ -14,6 +14,7 @@ export const documentSchema = z.object({
   size_bytes: z.number().int().nonnegative(), sha256: z.string(), status: statusSchema,
   processing_stage: z.string(), progress_percent: z.number().int().min(0).max(100),
   total_units: z.number().int().nonnegative().nullable(), processed_units: z.number().int().nonnegative(),
+  failed_job_id: uuid.nullable().optional(),
   error_code: maybeText, error_message: maybeText, created_at: z.string(), updated_at: z.string(),
   processing_started_at: maybeText, processing_finished_at: maybeText,
 });
@@ -51,17 +52,22 @@ export const invoiceSchema = z.object({
   line_items_complete: z.boolean(), uncertain_fields: z.array(z.string()), evidence: z.array(evidenceSchema),
 });
 const confidence = z.enum(['source_supported', 'review_required']);
-export const invoiceResponseSchema = z.object({
-  document_id: uuid, extraction_id: uuid, created_at: z.string(), duplicates_checked_at: z.string(), duplicates_truncated: z.boolean(),
-  result: z.object({
+const invoiceResultSchema = z.object({
     schema_version: z.literal('1'), source: sourceSchema, provider: z.enum(['gemini', 'test']), model: z.string(),
     invoice: invoiceSchema, issues: z.array(issueSchema), missing_fields: z.array(z.string()),
     review_required: z.boolean(), confidence, evidence: z.array(verifiedEvidenceSchema),
     input_units: z.number().int().positive(), chunks_processed: z.number().int().positive(),
-  }),
+  });
+export const invoiceResponseSchema = z.object({
+  document_id: uuid, extraction_id: uuid, created_at: z.string(), duplicates_checked_at: z.string(), duplicates_truncated: z.boolean(),
+  correction_revision: z.number().int().nonnegative().optional(),
+  corrected_fields: z.array(z.string()).optional(),
+  original_result: invoiceResultSchema.nullable().optional(),
+  result: invoiceResultSchema,
 });
 export type InvoiceResponse = z.infer<typeof invoiceResponseSchema>;
 export const validationSchema = z.object({
+  correction_revision: z.number().int().nonnegative().optional(),
   document_id: uuid, extraction_id: uuid, issues: z.array(issueSchema), missing_fields: z.array(z.string()),
   uncertain_fields: z.array(z.string()), review_required: z.boolean(), confidence,
   duplicates_checked_at: z.string(), duplicates_truncated: z.boolean(),
@@ -85,3 +91,37 @@ export const contentSchema = z.object({
   message: 'Invalid content cursor',
 });
 export type ContentPage = z.infer<typeof contentSchema>;
+
+export type InvoiceValues = z.infer<typeof invoiceSchema>;
+export type CorrectionChanges = Partial<Pick<InvoiceValues,
+  'invoice_number' | 'invoice_date' | 'supplier_name' | 'customer_name' | 'currency' |
+  'subtotal' | 'tax' | 'total' | 'line_items' | 'line_items_complete'>>;
+export interface CorrectionCommand {
+  request_id: string; extraction_id: string; expected_revision: number;
+  reviewer_label: string; reason: string; changes: CorrectionChanges;
+}
+export const correctionReceiptSchema = z.object({
+  id: uuid, request_id: uuid, document_id: uuid, extraction_id: uuid,
+  revision: z.number().int().positive(), created_at: z.string(),
+});
+export type CorrectionReceipt = z.infer<typeof correctionReceiptSchema>;
+export const correctionSummarySchema = correctionReceiptSchema.extend({
+  reviewer_label: z.string(), reason: z.string(), changed_fields: z.array(z.string()),
+  original_digest: z.string(), tolerance: z.string(),
+});
+export const correctionPageSchema = z.object({
+  document_id: uuid, extraction_id: uuid, items: z.array(correctionSummarySchema),
+  total: z.number().int().nonnegative(), offset: z.number().int().nonnegative(),
+  limit: z.number().int().positive(), has_more: z.boolean(),
+});
+export type CorrectionPage = z.infer<typeof correctionPageSchema>;
+export const correctionDetailSchema = correctionSummarySchema.extend({
+  corrected_fields: z.array(z.string()), before_values: z.record(z.string(), z.unknown()),
+  after_values: z.record(z.string(), z.unknown()), issues_at_save: z.array(issueSchema),
+});
+export type CorrectionDetail = z.infer<typeof correctionDetailSchema>;
+export interface ReprocessCommand { request_id: string; failed_job_id: string }
+export const reprocessReceiptSchema = z.object({
+  request_id: uuid, document_id: uuid, failed_job_id: uuid, new_job_id: uuid, created_at: z.string(),
+});
+export type ReprocessReceipt = z.infer<typeof reprocessReceiptSchema>;
