@@ -1,0 +1,416 @@
+{
+  "evaluated_at_utc": "2026-10-30T14:38:59.627156+00:00",
+  "base_url": "https://ai-document-intelligence-api-cjh6.onrender.com",
+  "dataset": "Care Guide synthetic invoices v1",
+  "requested_cases": 5,
+  "accepted_count": 5,
+  "completed_count": 5,
+  "terminal_failed_count": 0,
+  "timeout_count": 0,
+  "client_error_count": 0,
+  "completion_rate_pct": 100.0,
+  "terminal_failure_rate_pct": 0.0,
+  "timeout_rate_pct": 0.0,
+  "completed_only_field_accuracy_pct": 80.0,
+  "all_accepted_field_accuracy_pct": 80.0,
+  "correct_fields": 48,
+  "scored_fields_completed": 60,
+  "known_fields_accepted": 60,
+  "mean_completion_seconds": 12.4133,
+  "median_completion_seconds": 12.373,
+  "p95_completion_seconds": 16.6859,
+  "review_required_completed_count": 1,
+  "total_issues_completed": 35,
+  "cases": [
+    {
+      "fixture": "eval_csv_invoice.csv",
+      "format": "csv",
+      "state": "completed",
+      "accepted": true,
+      "duration_seconds": 16.6859,
+      "matches": 12,
+      "scored_fields": 12,
+      "document_id": "e082a761-e60a-4203-8117-158cc3c110b8",
+      "field_results": {
+        "invoice_number": {
+          "match": true,
+          "expected": "EVAL-CSV-601",
+          "actual": "EVAL-CSV-601"
+        },
+        "invoice_date": {
+          "match": true,
+          "expected": "2026-10-21",
+          "actual": "2026-10-21"
+        },
+        "supplier_name": {
+          "match": true,
+          "expected": "Mira Stationery Co",
+          "actual": "Mira Stationery Co"
+        },
+        "customer_name": {
+          "match": true,
+          "expected": "Cedar Design Group",
+          "actual": "Cedar Design Group"
+        },
+        "currency": {
+          "match": true,
+          "expected": "BDT",
+          "actual": "BDT"
+        },
+        "subtotal": {
+          "match": true,
+          "expected": "800.00",
+          "actual": "800.00"
+        },
+        "tax": {
+          "match": true,
+          "expected": "40.00",
+          "actual": "40.00"
+        },
+        "total": {
+          "match": true,
+          "expected": "840.00",
+          "actual": "840.00"
+        },
+        "line_items.0.description": {
+          "match": true,
+          "expected": "Notebook Pack",
+          "actual": "Notebook Pack"
+        },
+        "line_items.0.quantity": {
+          "match": true,
+          "expected": "2",
+          "actual": "2"
+        },
+        "line_items.0.unit_price": {
+          "match": true,
+          "expected": "400.00",
+          "actual": "400.00"
+        },
+        "line_items.0.line_total": {
+          "match": true,
+          "expected": "800.00",
+          "actual": "800.00"
+        }
+      },
+      "provider": "gemini",
+      "model": "gemini-3.5-flash-lite",
+      "review_required": false,
+      "issue_count": 0,
+      "errors": 0,
+      "warnings": 0
+    },
+    {
+      "fixture": "eval_digital_invoice.pdf",
+      "format": "digital_pdf",
+      "state": "completed",
+      "accepted": true,
+      "duration_seconds": 8.2582,
+      "matches": 12,
+      "scored_fields": 12,
+      "document_id": "de8dbcb2-816a-49e4-a291-3123042819a8",
+      "field_results": {
+        "invoice_number": {
+          "match": true,
+          "expected": "EVAL-PDF-602",
+          "actual": "EVAL-PDF-602"
+        },
+        "invoice_date": {
+          "match": true,
+          "expected": "2026-10-22",
+          "actual": "2026-10-22"
+        },
+        "supplier_name": {
+          "match": true,
+          "expected": "Blue Harbor Electronics",
+          "actual": "Blue Harbor Electronics"
+        },
+        "customer_name": {
+          "match": true,
+          "expected": "Valley Research Center",
+          "actual": "Valley Research Center"
+        },
+        "currency": {
+          "match": true,
+          "expected": "BDT",
+          "actual": "BDT"
+        },
+        "subtotal": {
+          "match": true,
+          "expected": "1500.00",
+          "actual": "1500.00"
+        },
+        "tax": {
+          "match": true,
+          "expected": "75.00",
+          "actual": "75.00"
+        },
+        "total": {
+          "match": true,
+          "expected": "1575.00",
+          "actual": "1575.00"
+        },
+        "line_items.0.description": {
+          "match": true,
+          "expected": "USB Cable Kit",
+          "actual": "USB Cable Kit"
+        },
+        "line_items.0.quantity": {
+          "match": true,
+          "expected": "3",
+          "actual": "3"
+        },
+        "line_items.0.unit_price": {
+          "match": true,
+          "expected": "500.00",
+          "actual": "500.00"
+        },
+        "line_items.0.line_total": {
+          "match": true,
+          "expected": "1500.00",
+          "actual": "1500.00"
+        }
+      },
+      "provider": "gemini",
+      "model": "gemini-3.5-flash-lite",
+      "review_required": false,
+      "issue_count": 0,
+      "errors": 0,
+      "warnings": 0
+    },
+    {
+      "fixture": "eval_scanned_invoice.pdf",
+      "format": "scanned_pdf",
+      "state": "completed",
+      "accepted": true,
+      "duration_seconds": 12.373,
+      "matches": 12,
+      "scored_fields": 12,
+      "document_id": "91ef8524-7957-4eeb-8055-0baf77cefa62",
+      "field_results": {
+        "invoice_number": {
+          "match": true,
+          "expected": "EVAL-OCR-603",
+          "actual": "EVAL-OCR-603"
+        },
+        "invoice_date": {
+          "match": true,
+          "expected": "2026-10-23",
+          "actual": "2026-10-23"
+        },
+        "supplier_name": {
+          "match": true,
+          "expected": "Sunrise Office Mart",
+          "actual": "Sunrise Office Mart"
+        },
+        "customer_name": {
+          "match": true,
+          "expected": "Orbit Analytics Ltd",
+          "actual": "Orbit Analytics Ltd"
+        },
+        "currency": {
+          "match": true,
+          "expected": "BDT",
+          "actual": "BDT"
+        },
+        "subtotal": {
+          "match": true,
+          "expected": "1300.00",
+          "actual": "1300.00"
+        },
+        "tax": {
+          "match": true,
+          "expected": "65.00",
+          "actual": "65.00"
+        },
+        "total": {
+          "match": true,
+          "expected": "1365.00",
+          "actual": "1365.00"
+        },
+        "line_items.0.description": {
+          "match": true,
+          "expected": "Printer Ink Set",
+          "actual": "Printer Ink Set"
+        },
+        "line_items.0.quantity": {
+          "match": true,
+          "expected": "2",
+          "actual": "2"
+        },
+        "line_items.0.unit_price": {
+          "match": true,
+          "expected": "650.00",
+          "actual": "650.00"
+        },
+        "line_items.0.line_total": {
+          "match": true,
+          "expected": "1300.00",
+          "actual": "1300.00"
+        }
+      },
+      "provider": "gemini",
+      "model": "gemini-3.5-flash-lite",
+      "review_required": false,
+      "issue_count": 0,
+      "errors": 0,
+      "warnings": 0
+    },
+    {
+      "fixture": "eval_image_invoice.png",
+      "format": "image",
+      "state": "completed",
+      "accepted": true,
+      "duration_seconds": 12.3814,
+      "matches": 12,
+      "scored_fields": 12,
+      "document_id": "0ad138d9-1a34-4586-bd79-3972a83d6b04",
+      "field_results": {
+        "invoice_number": {
+          "match": true,
+          "expected": "EVAL-IMG-604",
+          "actual": "EVAL-IMG-604"
+        },
+        "invoice_date": {
+          "match": true,
+          "expected": "2026-10-24",
+          "actual": "2026-10-24"
+        },
+        "supplier_name": {
+          "match": true,
+          "expected": "Silverline Paper House",
+          "actual": "Silverline Paper House"
+        },
+        "customer_name": {
+          "match": true,
+          "expected": "Iris Tech Labs",
+          "actual": "Iris Tech Labs"
+        },
+        "currency": {
+          "match": true,
+          "expected": "BDT",
+          "actual": "BDT"
+        },
+        "subtotal": {
+          "match": true,
+          "expected": "1000.00",
+          "actual": "1000.00"
+        },
+        "tax": {
+          "match": true,
+          "expected": "50.00",
+          "actual": "50.00"
+        },
+        "total": {
+          "match": true,
+          "expected": "1050.00",
+          "actual": "1050.00"
+        },
+        "line_items.0.description": {
+          "match": true,
+          "expected": "A4 Paper Ream",
+          "actual": "A4 Paper Ream"
+        },
+        "line_items.0.quantity": {
+          "match": true,
+          "expected": "4",
+          "actual": "4"
+        },
+        "line_items.0.unit_price": {
+          "match": true,
+          "expected": "250.00",
+          "actual": "250.00"
+        },
+        "line_items.0.line_total": {
+          "match": true,
+          "expected": "1000.00",
+          "actual": "1000.00"
+        }
+      },
+      "provider": "gemini",
+      "model": "gemini-3.5-flash-lite",
+      "review_required": false,
+      "issue_count": 0,
+      "errors": 0,
+      "warnings": 0
+    },
+    {
+      "fixture": "eval_spreadsheet_invoice.xlsx",
+      "format": "xlsx",
+      "state": "completed",
+      "accepted": true,
+      "duration_seconds": 12.3678,
+      "matches": 0,
+      "scored_fields": 12,
+      "document_id": "ad099add-46d8-49f0-acc2-f74ad3f51132",
+      "field_results": {
+        "invoice_number": {
+          "match": false,
+          "expected": "EVAL-XLS-605",
+          "actual": null
+        },
+        "invoice_date": {
+          "match": false,
+          "expected": "2026-10-25",
+          "actual": null
+        },
+        "supplier_name": {
+          "match": false,
+          "expected": "North Wind Supplies",
+          "actual": null
+        },
+        "customer_name": {
+          "match": false,
+          "expected": "Blue Moon Services",
+          "actual": null
+        },
+        "currency": {
+          "match": false,
+          "expected": "BDT",
+          "actual": null
+        },
+        "subtotal": {
+          "match": false,
+          "expected": "1000.00",
+          "actual": null
+        },
+        "tax": {
+          "match": false,
+          "expected": "50.00",
+          "actual": null
+        },
+        "total": {
+          "match": false,
+          "expected": "1050.00",
+          "actual": null
+        },
+        "line_items.0.description": {
+          "match": false,
+          "expected": "Stapler Box",
+          "actual": null
+        },
+        "line_items.0.quantity": {
+          "match": false,
+          "expected": "5",
+          "actual": null
+        },
+        "line_items.0.unit_price": {
+          "match": false,
+          "expected": "200.00",
+          "actual": null
+        },
+        "line_items.0.line_total": {
+          "match": false,
+          "expected": "1000.00",
+          "actual": null
+        }
+      },
+      "provider": "gemini",
+      "model": "gemini-3.5-flash-lite",
+      "review_required": true,
+      "issue_count": 35,
+      "errors": 0,
+      "warnings": 35
+    }
+  ]
+}

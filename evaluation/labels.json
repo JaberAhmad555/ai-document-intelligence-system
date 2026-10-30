@@ -1,0 +1,111 @@
+{
+  "schema_version": "1",
+  "dataset_name": "Care Guide synthetic invoice fixture set",
+  "cases": {
+    "eval_csv_invoice.csv": {
+      "format": "csv",
+      "expected": {
+        "invoice_number": "EVAL-CSV-601",
+        "invoice_date": "2026-10-21",
+        "supplier_name": "Mira Stationery Co",
+        "customer_name": "Cedar Design Group",
+        "currency": "BDT",
+        "subtotal": "800.00",
+        "tax": "40.00",
+        "total": "840.00",
+        "line_items": [
+          {
+            "description": "Notebook Pack",
+            "quantity": "2",
+            "unit_price": "400.00",
+            "line_total": "800.00"
+          }
+        ]
+      }
+    },
+    "eval_digital_invoice.pdf": {
+      "format": "digital_pdf",
+      "expected": {
+        "invoice_number": "EVAL-PDF-602",
+        "invoice_date": "2026-10-22",
+        "supplier_name": "Blue Harbor Electronics",
+        "customer_name": "Valley Research Center",
+        "currency": "BDT",
+        "subtotal": "1500.00",
+        "tax": "75.00",
+        "total": "1575.00",
+        "line_items": [
+          {
+            "description": "USB Cable Kit",
+            "quantity": "3",
+            "unit_price": "500.00",
+            "line_total": "1500.00"
+          }
+        ]
+      }
+    },
+    "eval_scanned_invoice.pdf": {
+      "format": "scanned_pdf",
+      "expected": {
+        "invoice_number": "EVAL-OCR-603",
+        "invoice_date": "2026-10-23",
+        "supplier_name": "Sunrise Office Mart",
+        "customer_name": "Orbit Analytics Ltd",
+        "currency": "BDT",
+        "subtotal": "1300.00",
+        "tax": "65.00",
+        "total": "1365.00",
+        "line_items": [
+          {
+            "description": "Printer Ink Set",
+            "quantity": "2",
+            "unit_price": "650.00",
+            "line_total": "1300.00"
+          }
+        ]
+      }
+    },
+    "eval_image_invoice.png": {
+      "format": "image",
+      "expected": {
+        "invoice_number": "EVAL-IMG-604",
+        "invoice_date": "2026-10-24",
+        "supplier_name": "Silverline Paper House",
+        "customer_name": "Iris Tech Labs",
+        "currency": "BDT",
+        "subtotal": "1000.00",
+        "tax": "50.00",
+        "total": "1050.00",
+        "line_items": [
+          {
+            "description": "A4 Paper Ream",
+            "quantity": "4",
+            "unit_price": "250.00",
+            "line_total": "1000.00"
+          }
+        ]
+      }
+    },
+    "eval_spreadsheet_invoice.xlsx": {
+      "format": "xlsx",
+      "expected": {
+        "invoice_number": "EVAL-XLS-605",
+        "invoice_date": "2026-10-25",
+        "supplier_name": "North Wind Supplies",
+        "customer_name": "Blue Moon Services",
+        "currency": "BDT",
+        "subtotal": "1000.00",
+        "tax": "50.00",
+        "total": "1050.00",
+        "line_items": [
+          {
+            "description": "Stapler Box",
+            "quantity": "5",
+            "unit_price": "200.00",
+            "line_total": "1000.00"
+          }
+        ]
+      }
+    }
+  }
+}

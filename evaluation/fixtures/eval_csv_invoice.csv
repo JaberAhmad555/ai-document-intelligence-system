@@ -1,0 +1,2 @@
+invoice_number,invoice_date,supplier_name,customer_name,currency,description,quantity,unit_price,line_total,subtotal,tax,total
+EVAL-CSV-601,2026-10-21,Mira Stationery Co,Cedar Design Group,BDT,Notebook Pack,2,400.00,800.00,800.00,40.00,840.00

@@ -50,6 +50,13 @@ Rules:
     illegible, ambiguous, or omitted rows.
 13. Do not copy values from instructions or examples into the result.
 14. Do not evaluate spreadsheet formulas. Extract only supplied values.
+15. For XLS/XLSX evidence, `sequence` means document_units[].sequence,
+    NOT the sheet number, spreadsheet row_number, or cell address.
+16. Copy evidence.quote VERBATIM from that SAME document unit's `text`.
+    Prefer one exact `B2: value` cell line (or provided `Label: value` line).
+    Never construct a quote by joining text from two different rows.
+17. Before returning JSON, verify every citation's sequence and quote
+    against the provided document_units. If unsure, return null instead.
 """.strip()
 
 

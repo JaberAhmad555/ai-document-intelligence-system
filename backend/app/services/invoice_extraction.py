@@ -8,6 +8,7 @@ result through the existing fenced-write mechanism.
 from __future__ import annotations
 
 from collections.abc import Callable, Iterable, Iterator
+from decimal import Decimal, InvalidOperation
 from typing import Any
 
 from app.schemas.invoice import (
@@ -37,6 +38,26 @@ def _normalized(value: str) -> str:
     return " ".join(value.split())
 
 
+def _spreadsheet_cell_matches(unit: ReadingUnit, value: Any) -> bool:
+    """A repaired citation must also contain the proposed value as a cell.
+
+    Numeric cells may be rendered as `1000` while the invoice schema uses
+    `1000.00`. Decimal equality permits that lossless formatting difference.
+    """
+    for cell in unit.cells:
+        if cell.value is None:
+            continue
+        if cell.value.strip() == str(value).strip():
+            return True
+        if isinstance(value, Decimal) and cell.data_type == "number":
+            try:
+                if Decimal(cell.value) == value:
+                    return True
+            except InvalidOperation:
+                continue
+    return False
+
+
 def _unit_text(unit: ReadingUnit) -> str:
     """Use actual reader output, including supplied spreadsheet cell values."""
     pieces: list[str] = []
@@ -53,6 +74,21 @@ def _unit_text(unit: ReadingUnit) -> str:
                     f"{cell.address}: formula={cell.formula} "
                     "(formula text; not an evaluated value)"
                 )
+
+        # Two-column key/value worksheets are common invoice formats.
+        # Expose the literal label/value pairing as a contiguous source span,
+        # while retaining original cell-address lines for exact citations.
+        if (
+            unit.method == "spreadsheet"
+            and len(unit.cells) == 2
+            and unit.cells[0].data_type == "text"
+            and unit.cells[0].value
+            and unit.cells[1].value is not None
+            and unit.cells[1].data_type != "formula"
+        ):
+            label = unit.cells[0].value.strip().rstrip(":")
+            if label and len(label) <= 120 and "\n" not in label:
+                pieces.append(f"{label}: {unit.cells[1].value}")
 
     if not pieces:
         if unit.native_text:
@@ -121,13 +157,56 @@ def _check_evidence(
 
     for evidence in invoice.evidence:
         source_text = texts.get(evidence.sequence)
-        key = (evidence.field, evidence.sequence, evidence.quote)
 
         valid = (
             source_text is not None
             and _field_value(invoice, evidence.field) is not None
             and _normalized(evidence.quote) in _normalized(source_text)
         )
+
+        # XLS/XLSX content has both sheet row numbers and global unit
+        # sequences. A model may cite a neighboring sequence instead of the
+        # row containing its verbatim quote. Repair only an unambiguous,
+        # adjacent worksheet-row citation with an EXACT quote from the source;
+        # never invent a quote or relax evidence checks for other formats.
+        accepted = evidence
+        if (
+            not valid
+            and _field_value(invoice, evidence.field) is not None
+            and units
+            and units[0].source.extension in {".xlsx", ".xls"}
+        ):
+            cited_position = positions.get(evidence.sequence)
+            candidates = [
+                unit
+                for unit in units
+                if unit.kind == "row"
+                and abs(unit.sequence - evidence.sequence) == 1
+                and (cited_position is None
+                     or cited_position.sheet_name is None
+                     or unit.position.sheet_name == cited_position.sheet_name)
+                and _normalized(evidence.quote)
+                   in _normalized(texts.get(unit.sequence, ""))
+                and _spreadsheet_cell_matches(
+                    unit, _field_value(invoice, evidence.field)
+                )
+            ]
+            if len(candidates) == 1:
+                accepted = evidence.model_copy(
+                    update={"sequence": candidates[0].sequence}
+                )
+                valid = True
+                issues.append(
+                    ValidationIssue(
+                        code="evidence_sequence_repaired",
+                        severity="warning",
+                        field=evidence.field,
+                        message=(
+                            "A spreadsheet source quote was verified in a "
+                            "neighboring row unit; its sequence was corrected."
+                        ),
+                    )
+                )
 
         if not valid:
             issues.append(
@@ -143,6 +222,7 @@ def _check_evidence(
             )
             continue
 
+        key = (accepted.field, accepted.sequence, accepted.quote)
         if key in seen:
             continue
 
@@ -150,8 +230,8 @@ def _check_evidence(
         supported_paths.add(evidence.field)
         verified.append(
             VerifiedEvidence(
-                **evidence.model_dump(),
-                position=positions[evidence.sequence],
+                **accepted.model_dump(),
+                position=positions[accepted.sequence],
             )
         )
 
